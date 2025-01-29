@@ -1,0 +1,1029 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow  explicitTransitions="true"  name="RTX - Update Entitlement Owner - Workflow4">
+  <Variable initializer="true" name="trace"/>
+  <Variable initializer="false" name="SuccessMessage"/>
+  <Variable initializer="false" name="ErrorMessage"/>
+  <Variable name="buttonName"/>
+  <Variable initializer="true" name="transient"/>
+  <Variable input="true" name="launcher"/>
+  <Step icon="Start" name="Start" posX="20" posY="20" resultVariable="buttonName">
+    <Script>
+      <Source>
+
+        String buttonName = wfcontext.getWorkflowCase().get("buttonName");
+
+        System.out.println("the buttonName value is in start step :"+buttonName);
+
+        return buttonName;
+
+      </Source>
+    </Script>
+    <Transition to="Modify Entitlement Form"/>
+  </Step>
+  <Step icon="Default" name="Modify Entitlement Form" posX="187" posY="91" resultVariable="buttonName">
+    <Approval name="Modify Entitlement Form" owner="ref:launcher" return="ApplicationName,EntitlementValue,EntitlementOwner,CurrentOwner,appBasedEntitlement,buttonName" send="buttonName">
+      <AfterScript>
+        <Source>
+
+          import sailpoint.object.Field;
+          import sailpoint.object.Form;
+          Form form  =approval.getForm();
+
+
+          Field field0 = form.getField("previousbuttonName");
+
+          Field field1 = form.getField("buttonName");
+
+          if(field0 != null &amp;&amp; field1 != null){
+          field0.setValue(null);
+          field1.setValue(null);
+
+
+          }
+
+
+
+        </Source>
+      </AfterScript>
+      <Form name="Modify Entitlement Form">
+        <Attributes>
+          <Map>
+            <entry key="pageTitle" value="Manage Entitlement Owner"/>
+          </Map>
+        </Attributes>
+        <Section name="searchByApp">
+          <Field dynamic="true" hidden="true" name="previousbuttonName" type="string"/>
+          <Field dynamic="true" hidden="true" name="buttonName" type="string">
+            <Script>
+              <Source>
+                import sailpoint.object.*;
+                return buttonName;
+              </Source>
+            </Script>
+          </Field>
+          <Field dynamic="true" hidden="true" name="clearAllFields" type="string">
+            <Script>
+              <Source>
+                import sailpoint.object.*;
+
+                Field field0 = form.getField("previousbuttonName");
+                Field field11 = form.getField("ClearedButton");
+
+                String prevButtonVal = field0.getValue();
+
+
+                System.out.println("startin of the form in crearfields  : =="+field11.getValue());
+                System.out.println("buttonName  : ============="+buttonName);
+
+                if(prevButtonVal != null &amp;&amp; !prevButtonVal.equalsIgnoreCase("cleared") ){
+                // System.out.println("cleared the previousbutton value ");
+                field0.setValue(null);
+
+                }
+
+
+                prevButtonVal = field0.getValue();
+
+                System.out.println("previousbuttonName value in "+prevButtonVal);
+                System.out.println("buttonName value in "+buttonName);
+
+                Field field1 = form.getField("applicationName");
+                Field field2 = form.getField("appBasedEntitlement");
+                Field field3 = form.getField("displayName");
+                Field field4 = form.getField("EntitlementValue");
+                Field field5 = form.getField("ApplicationName");
+                Field field6 = form.getField("Description");
+                Field field7 = form.getField("EntitlementOwner");
+                //System.out.println("the value infield.getValue() entitlement start="+field1.getValue());
+
+                if( buttonName != null   ){
+
+                if(buttonName.equalsIgnoreCase("clear") &amp;&amp; prevButtonVal != null &amp;&amp; !prevButtonVal.equalsIgnoreCase("cleared")){
+
+                Field previousbuttonName = form.getField("previousbuttonName");
+                //previousbuttonName.setValue("cleared");
+                field1.setValue(null);
+                field2.setValue(null);
+                field3.setValue(null);
+                field4.setValue(null);
+                field5.setValue(null);
+                field6.setValue(null);
+                field7.setValue(null);
+                //  System.out.println("the value infield.getValue() entitlement end="+field1.getValue());
+
+
+                }else if (buttonName.equalsIgnoreCase("clear") &amp;&amp; prevButtonVal == null){
+
+                Field previousbuttonName = form.getField("previousbuttonName");
+                previousbuttonName.setValue("cleared");
+
+                field1.setValue(null);
+                field2.setValue(null);
+                field3.setValue(null);
+                field4.setValue(null);
+                field5.setValue(null);
+                field6.setValue(null);
+                field7.setValue(null);
+
+
+                }
+
+                }
+
+              </Source>
+            </Script>
+          </Field>
+          <Field displayName="Application" dynamic="true" helpKey="Select an application" name="applicationName" postBack="true" required="true" type="Application"/>
+          <Field dependencies="applicationName" displayName="Entitlement" dynamic="true" helpKey="Select an entitlement to modify" name="appBasedEntitlement" postBack="true" required="true" type="ManagedAttribute">
+            <Attributes>
+              <Map>
+                <entry key="filterString">
+                  <value>
+                    <Script>
+                      <Source>
+                        // This is restricting a set of selectable objects (Entitlements) for the selected application to be presented in the drop-down list
+
+                        import sailpoint.object.Filter;
+                        import sailpoint.object.Field;
+
+                        System.out.println("filter string  of the form in crearfields");
+
+                        if(applicationName != null){
+                        // System.out.println("the application name value is :"+applicationName);
+                        Filter filter =Filter.eq("application.id",applicationName);
+                        Field field = form.getField("appBasedEntitlement");
+
+                        if(field!=null){
+                        // System.out.println("the field name value is :");
+                        field.setFilterString(filter.toString());
+                        }
+
+
+                        }
+                      </Source>
+                    </Script>
+                  </value>
+                </entry>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source>
+
+                        if(applicationName != null){
+
+                        return false;
+
+                        }else{
+
+                        return true;
+                        }
+                      </Source>
+                    </Script>
+                  </value>
+                </entry>
+                <entry key="valueProperty" value="id"/>
+              </Map>
+            </Attributes>
+          </Field>
+          <Field dynamic="true" hidden="true" name="ClearedButton" type="string">
+            <Script>
+              <Source>
+                import sailpoint.object.Field;
+
+                Field field0 = form.getField("previousbuttonName");
+                if(field0 != null){
+
+                if(field0.getValue() != null &amp;&amp; field0.getValue().equalsIgnoreCase("cleared")){
+                //  field0.setValue("already Cleared");
+
+                return "already Cleared";
+                }
+                System.out.println("the value clearedButton is :"+field0.getValue());
+
+
+
+                }
+
+              </Source>
+            </Script>
+          </Field>
+        </Section>
+        <Section name="Details">
+          <Attributes>
+            <Map>
+              <entry key="hidden">
+                <value>
+                  <Script>
+                    <Source>
+                      import sailpoint.object.Filter;
+                      import sailpoint.object.Field;
+                      import sailpoint.object.QueryOptions;
+                      import sailpoint.object.ManagedAttribute;
+
+
+                      ManagedAttribute managed = context.getObjectById(ManagedAttribute.class,appBasedEntitlement);
+                      String appId ="";
+
+                      if(managed != null){
+
+                      appId = managed.getApplicationId();
+                      }
+
+                      if(applicationName != null){
+                      System.out.println("the application name value is in hidden  :==============="+applicationName);
+                      System.out.println("the application name value is in hidden  appBasedEntitlement===========:"+appBasedEntitlement);
+                      Filter filter =Filter.eq("application.id",applicationName);
+
+                      QueryOptions qop = new QueryOptions();
+                      qop.add(filter);
+                      //  List list =  context.getObjects(ManagedAttribute.class,qop);
+
+                      Iterator it = context.search(ManagedAttribute.class, qop ,"id");
+                      if(it != null &amp;&amp; it.hasNext() &amp;&amp; appId.equalsIgnoreCase(applicationName)){
+
+                      return false;
+                      }else{
+
+                      return true;
+                      }
+
+                      }
+                    </Source>
+                  </Script>
+                </value>
+              </entry>
+            </Map>
+          </Attributes>
+          <Field dependencies="applicationName" displayName="DisplayName" dynamic="true" helpKey="" name="displayName" readOnly="true" type="string">
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source>
+                        System.out.println("the appEntitlement value is :==========="+appBasedEntitlement);
+                        System.out.println("the applicationName value is :==========="+applicationName);
+                        System.out.println("DisplayName string  of the form in ");
+
+                        if(appBasedEntitlement != null &amp;&amp; applicationName!=null){
+                        return false;
+                        }else{
+                        return true;
+                        }
+                      </Source>
+                    </Script>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+            <Script>
+              <Source>
+                import sailpoint.object.ManagedAttribute;
+
+                if(appBasedEntitlement != null){
+
+                ManagedAttribute managed = context.getObjectById(ManagedAttribute.class,appBasedEntitlement);
+                if(managed != null) {
+
+                //System.out.println("the entitlement value is :"+appBasedEntitlement);
+
+                return managed.getDisplayName();
+
+                }
+
+                }
+
+
+
+
+              </Source>
+            </Script>
+          </Field>
+          <Field dependencies="appBasedEntitlement" displayName="EntitlementValue" dynamic="true" helpKey="" name="EntitlementValue" postBack="true" readOnly="true" required="true" type="string">
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source>
+                        if(appBasedEntitlement != null &amp;&amp; applicationName!=null){
+                        return false;
+                        }else{
+                        return true;
+                        }
+                      </Source>
+                    </Script>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+            <Script>
+              <Source>
+                import sailpoint.object.ManagedAttribute;
+
+                if(appBasedEntitlement != null){
+
+                ManagedAttribute managed = context.getObjectById(ManagedAttribute.class,appBasedEntitlement);
+                if(managed != null) {
+
+
+                return managed.getValue();
+
+                }
+
+                }
+
+
+
+
+              </Source>
+            </Script>
+          </Field>
+          <Field dependencies="appBasedEntitlement" displayName="ApplicationName" dynamic="true" helpKey="" name="ApplicationName" postBack="true" readOnly="true" required="true" type="string">
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source>
+                        if(appBasedEntitlement != null &amp;&amp; applicationName!=null){
+                        return false;
+                        }else{
+                        return true;
+                        }
+                      </Source>
+                    </Script>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+            <Script>
+              <Source>
+                import sailpoint.object.ManagedAttribute;
+
+
+
+                if(appBasedEntitlement != null){
+
+                ManagedAttribute managed = context.getObjectById(ManagedAttribute.class, appBasedEntitlement);
+                if(managed != null) {
+
+                return managed.getApplication().getName();
+
+                }
+
+                }
+
+
+
+
+              </Source>
+            </Script>
+          </Field>
+          <Field dependencies="appBasedEntitlement" displayName="Description" dynamic="true" helpKey="" name="Description" postBack="true" readOnly="true" type="string">
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source>
+                        if(appBasedEntitlement != null &amp;&amp; applicationName!=null){
+                        return false;
+                        }else{
+                        return true;
+                        }
+                      </Source>
+                    </Script>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+            <Script>
+              <Source>
+                import sailpoint.object.ManagedAttribute;
+                import sailpoint.object.Identity;
+                import sailpoint.object.Field;
+
+                if(appBasedEntitlement != null){
+
+                ManagedAttribute managed = context.getObjectById(ManagedAttribute.class, appBasedEntitlement);
+                if(managed != null) {
+
+                Map desc = managed.getDescriptions();
+
+                if(desc != null) {
+                String description = (String) desc.get("en_US");
+
+                return description;
+                }
+
+                }
+
+                }
+
+
+
+
+              </Source>
+            </Script>
+          </Field>
+          <Field displayName="Entitlement Owner" dynamic="true" helpKey="select the Identity" name="EntitlementOwner" postBack="true" required="true" type="Identity">
+            <Attributes>
+              <Map>
+                <entry key="filterString">
+                  <value>
+                    <Script>
+                      <Source>
+                        // This is restricting a set of selectable objects (Entitlements) for the selected application to be presented in the drop-down list
+
+                        import sailpoint.object.Filter;
+                        import sailpoint.object.Field;
+
+
+                        Filter filter = Filter.and(Filter.eq("inactive",false),Filter.eq("correlated",true));
+                        Field field = form.getField("EntitlementOwner");
+
+                        if(field!=null){
+                        // System.out.println("the field name value is :");
+                        field.setFilterString(filter.toString());
+                        }
+
+
+                      </Source>
+                    </Script>
+                  </value>
+                </entry>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source>
+                        if(appBasedEntitlement != null &amp;&amp; applicationName!=null){
+                        return false;
+                        }else{
+                        return true;
+                        }
+                      </Source>
+                    </Script>
+                  </value>
+                </entry>
+                <entry key="valueProperty" value="id"/>
+              </Map>
+            </Attributes>
+            <Script>
+              <Source>
+                import sailpoint.object.ManagedAttribute;
+                import sailpoint.object.Identity;
+                //  System.out.println("the entitlement value is :"+appBasedEntitlement);
+
+
+                if(appBasedEntitlement != null){
+
+                ManagedAttribute managed = context.getObjectById(ManagedAttribute.class, appBasedEntitlement);
+                if(managed != null) {
+
+                Identity owner = managed.getOwner();
+                if(owner != null){
+
+                return owner.getName();
+                }
+
+
+                }
+
+                }
+
+
+
+
+              </Source>
+            </Script>
+            <ValidationScript>
+              <Source>
+
+                import sailpoint.tools.Message;
+                List messages = new ArrayList();
+
+
+                import sailpoint.object.ManagedAttribute;
+                import sailpoint.object.Identity;
+
+                String oldOwner = "";
+                String newOwner = "";
+
+                if(value != null){
+
+                Identity identity  = context.getObjectById(Identity.class,value);
+
+                if(identity != null){
+                newOwner = identity.getName();
+
+                }else{
+
+                identity  = context.getObjectByName(Identity.class,value);
+                newOwner = identity.getName();
+                }
+
+                }
+
+
+                if(appBasedEntitlement != null){
+
+                ManagedAttribute managed = context.getObjectById(ManagedAttribute.class, appBasedEntitlement);
+                if(managed != null) {
+
+                Identity owner = managed.getOwner();
+                if(owner != null){
+
+                oldOwner =  owner.getName();
+
+                }
+
+
+                }
+
+                }
+
+
+                if(oldOwner.equalsIgnoreCase(newOwner)){
+                Message msg = new Message();
+                msg.setKey(" Old Owner and New Owner is the Same ,Please change the owner . ");
+                messages.add(msg);
+
+                return messages;
+
+                }
+
+
+              </Source>
+            </ValidationScript>
+          </Field>
+          <Field dynamic="true" hidden="true" name="previousEntitlement" type="string"/>
+          <Field dynamic="true" hidden="true" name="newPreviousEntitlement" type="string"/>
+          <Field dynamic="true" hidden="true" name="oldPreviousEntitlement" type="string"/>
+          <Field dynamic="true" hidden="true" name="resultBackButton" type="string"/>
+          <Field dependencies="appBasedEntitlement" displayName="Current Owner" dynamic="true" hidden="true" name="CurrentOwner" postBack="true" type="string">
+            <Script>
+              <Source>
+                import sailpoint.object.Filter;
+                import sailpoint.object.Identity;
+                import sailpoint.object.ManagedAttribute;
+                import sailpoint.object.Field;
+
+
+                String oldPreviousEntitlement = "";
+                String newPreviousEntitlement = "";
+
+                Field checkOldOwner = form.getField("oldPreviousEntitlement");
+                Field checkNewPrevOwner = form.getField("newPreviousEntitlement");
+                if(checkOldOwner != null){
+
+                oldPreviousEntitlement = checkOldOwner.getValue();
+                }
+
+                if(checkNewPrevOwner != null){
+
+                newPreviousEntitlement = checkNewPrevOwner.getValue();
+                }
+
+
+                if(appBasedEntitlement != null &amp;&amp; applicationName != null){
+                ManagedAttribute ma = context.getObjectById(ManagedAttribute.class,appBasedEntitlement);
+
+                if(ma != null){
+                Identity ownerIden = ma.getOwner();
+                boolean isremove = false;
+
+                if(ownerIden!=null){
+
+                Identity newOwner = context.getObjectById(Identity.class,EntitlementOwner);
+
+                Field periousF = form.getField("previousEntitlement");
+
+                if(newOwner != null &amp;&amp; periousF.getValue() != null){
+
+                if(newOwner.getName().equalsIgnoreCase(periousF.getValue())){
+
+                Field f1 = form.getField("EntitlementOwner");
+                isremove =true;
+                f1.setValue(null);
+                }
+                }
+
+
+
+                if(newOwner == null){
+                newOwner = context.getObjectByName(Identity.class,EntitlementOwner);
+                }
+
+                if(newOwner !=null){
+                Field periousF = form.getField("previousEntitlement");
+                periousF.setValue(newOwner.getName());
+                checkNewPrevOwner.setValue(newOwner.getName());
+                }
+
+                //  System.out.println("the newOwner value is :"+newOwner);
+                // System.out.println("the oldOwner value is :"+ownerIden.getName());
+
+                Field f = form.getField("EntitlementOwner");
+
+
+
+
+                if(f != null &amp;&amp; ownerIden != null  ){
+
+                Field f3 = form.getField("oldPreviousEntitlement");
+                f.setValue(ownerIden.getName());
+                f3.setValue(ownerIden.getName());
+
+                }
+
+
+
+
+                if(newOwner != null &amp;&amp; !newOwner.getName().equalsIgnoreCase(ownerIden.getName()) &amp;&amp; !isremove ){
+                System.out.println("the new owner setting value is if condition :");
+                f.setValue(newOwner.getName());
+                }
+
+                if(f != null &amp;&amp; ownerIden == null &amp;&amp;newOwner != null ){
+                System.out.println("the new owner setting value is if old owner is empty :");
+                f.setValue(newOwner.getName());
+
+                }
+
+
+                Field back_button = form.getField("buttonName");
+                Field f1 = form.getField("resultBackButton");
+                if(f1 != null){
+                // System.out.println("the back button result  :"+f1.getValue());
+
+                }
+
+
+
+                if(f != null &amp;&amp;newOwner != null &amp;&amp;back_button != null  ){
+                if( back_button.getValue() != null &amp;&amp; back_button.getValue().equalsIgnoreCase("back") &amp;&amp;!newOwner.getName().equalsIgnoreCase(ownerIden.getName()) &amp;&amp; !newOwner.getName().equalsIgnoreCase(newPreviousEntitlement) ){
+
+                f.setValue(newOwner.getName());
+
+                } else if( back_button.getValue() != null &amp;&amp; back_button.getValue().equalsIgnoreCase("back") &amp;&amp;!newOwner.getName().equalsIgnoreCase(ownerIden.getName()) &amp;&amp; newOwner.getName().equalsIgnoreCase(newPreviousEntitlement) ){
+
+                f.setValue(newOwner.getName());
+                }
+
+
+                if( back_button.getValue() != null &amp;&amp; back_button.getValue().equalsIgnoreCase("back") &amp;&amp;!newOwner.getName().equalsIgnoreCase(ownerIden.getName()) &amp;&amp;!ownerIden.getName().equalsIgnoreCase(oldPreviousEntitlement  ) ){
+
+                f.setValue(ownerIden.getName());
+
+                }
+
+
+                }
+
+                return ownerIden.getName();
+                }else{
+
+
+
+                Field f = form.getField("EntitlementOwner");
+
+                Identity newOwner = context.getObjectById(Identity.class,EntitlementOwner);
+
+                if(f!= null &amp;&amp; newOwner != null){
+
+                System.out.println("newOwner is there if current owner is not there : "+newOwner.getName());
+                f.setValue(newOwner.getName());
+                }else{
+
+                f.setValue(null);
+
+                System.out.println("current entitlement owner is not there ");
+                return null;
+
+                }
+
+
+
+                }
+
+                }else{
+                return "";
+                }
+                }
+              </Source>
+            </Script>
+          </Field>
+        </Section>
+        <Button action="next" label="NEXT" parameter="buttonName"/>
+        <Button action="cancel" label="Cancel" parameter="buttonName" value="Cancel"/>
+      </Form>
+    </Approval>
+    <Transition to="Confirm Entitlement Owner Update"/>
+  </Step>
+  <Step icon="Default" name="Confirm Entitlement Owner Update" posX="187" posY="91">
+    <Approval name="Confirm Entitlement Owner Update" owner="ref:launcher" return="NewOwner,EntitlementValue,buttonName" send="ApplicationName,EntitlementValue,CurrentOwner,EntitlementOwner,appBasedEntitlement">
+      <Form name="Confirm Entitlement Owner Update">
+        <Attributes>
+          <Map>
+            <entry key="pageTitle" value="Confirm Entitlement Owner Update"/>
+          </Map>
+        </Attributes>
+        <Field displayName="ApplicationName" dynamic="true" name="ApplicationName" readOnly="true" type="string">
+          <Script>
+            <Source>
+
+
+              return ApplicationName;
+
+            </Source>
+          </Script>
+        </Field>
+        <Field displayName="EntitlementValue" dynamic="true" name="EntitlementValue" readOnly="true" type="string">
+          <Script>
+            <Source>
+
+              import sailpoint.object.ManagedAttribute;
+
+              if(appBasedEntitlement != null ){
+              ManagedAttribute ma = context.getObjectById(ManagedAttribute.class,appBasedEntitlement);
+
+              if(ma != null){
+
+              String displayName = ma.getDisplayName();
+              if(displayName != null){
+
+              return displayName;
+              }
+
+              }
+
+              }
+
+
+              return EntitlementValue;
+
+            </Source>
+          </Script>
+        </Field>
+        <Field displayName="Current Owner" dynamic="true" name="CurrentOwner" readOnly="true" type="string">
+          <Script>
+            <Source>
+              import sailpoint.object.Identity;
+
+
+
+              String name ="";
+
+              if(CurrentOwner != null){
+
+              Identity identity = context.getObjectById(Identity.class,CurrentOwner);
+
+              if(identity != null){
+
+              name = identity.getDisplayName();
+
+              return name;
+              }else{
+
+              Identity identity = context.getObjectByName(Identity.class,CurrentOwner);
+
+              if(identity != null){
+
+              name = identity.getDisplayName();
+
+              return name;
+
+              }
+
+              }
+
+              }
+              return name;
+
+
+
+            </Source>
+          </Script>
+        </Field>
+        <Field displayName="New Owner" dynamic="true" name="NewOwner" readOnly="true" type="string">
+          <Script>
+            <Source>
+              import sailpoint.object.Identity;
+
+
+              String name ="";
+
+              if(EntitlementOwner != null){
+
+              Identity identity = context.getObjectById(Identity.class,EntitlementOwner);
+
+              if(identity != null){
+
+              name = identity.getDisplayName();
+
+              return name;
+              }
+
+              }
+              return name;
+
+            </Source>
+          </Script>
+        </Field>
+        <Button action="next" label="Submit" parameter="buttonName"/>
+        <Button action="back" label="Back" parameter="buttonName" value="back"/>
+        <Button action="cancel" label="Cancel" parameter="buttonName" value="Cancel"/>
+      </Form>
+    </Approval>
+    <Transition to="Start">
+      <Script>
+        <Source>
+
+          System.out.println("this is back button working *******************"+buttonName);
+          if(buttonName != null &amp;&amp; buttonName.equalsIgnoreCase("back")){
+          wfcontext.getWorkflowCase().put("buttonName", "back");
+          context.setProperty("buttonName","back");
+          context.commitTransaction();
+
+          return true;
+
+          }
+
+
+        </Source>
+      </Script>
+    </Transition>
+    <Transition to="Provision Changes"/>
+  </Step>
+  <Step icon="Default" name="Provision Changes" resultVariable="ErrorMessage">
+    <Script>
+      <Source>
+        import sailpoint.object.ManagedAttribute;
+        import sailpoint.object.Identity;
+        import sailpoint.object.Attributes;
+        import sailpoint.object.AuditEvent;
+        import sailpoint.server.Auditor;
+
+        String AUDIT_ACTION = "EntitlementModification";
+        List eventList = new ArrayList();
+
+        if(entChangeMap != null){
+        ManagedAttribute ma = context.getObjectById(ManagedAttribute.class,appBasedEntitlement);
+
+        String oldOwner = CurrentOwner;
+        String newOwner = NewOwner;
+
+        try{
+        if(oldOwner != null &amp;&amp; newOwner != null ){
+
+
+        //old owenr and new owner is not a same
+        if(!oldOwner.equalsIgnoreCase(newOwner)){
+
+        Identity newOwnerIdentity = context.getObjectByName(Identity.class,newOwner);
+        ma.setOwner(newOwnerIdentity);
+
+        context.saveObject(ma);
+        context.commitTransaction();
+
+        boolean ErrorMessage = false;
+        return ErrorMessage;
+        }else if(oldOwner.equalsIgnoreCase(newOwner)){
+
+        // System.out.println("new owenr and new owner is same ");
+        boolean ErrorMessage = false;
+        return ErrorMessage;
+        }
+
+        }else if(oldOwner == null &amp;&amp; newOwner != null){
+
+        Identity newOwnerIdentity = context.getObjectByName(Identity.class,newOwner);
+        ma.setOwner(newOwnerIdentity);
+
+        context.saveObject(ma);
+        context.commitTransaction();
+
+        boolean ErrorMessage = false;
+        return ErrorMessage;
+
+
+        }
+
+
+
+        }catch(Exception e){
+
+        boolean ErrorMessage = true;
+        return ErrorMessage;
+
+        }
+        }
+
+
+
+
+      </Source>
+    </Script>
+    <Transition to="ResultForm"/>
+  </Step>
+  <Step icon="ResultForm" name="ResultForm" posX="398" posY="33">
+    <Approval name="Displaying Message" owner="ref:launcher" return="buttonName" send="ErrorMessage,NewOwner,EntitlementValue">
+      <Arg name="scheduleMessage" value="ref:scheduleMessage"/>
+      <Arg name="workItemType" value="Form"/>
+      <Form>
+        <Attributes>
+          <Map>
+            <entry key="pageTitle" value="Entitlement Owner Update Result"/>
+          </Map>
+        </Attributes>
+        <Section name="userInstructions" type="text">
+          <Field>
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source>
+                        if(ErrorMessage != null &amp;&amp; ErrorMessage==true){
+                        return false;
+                        }else{
+                        return true;
+                        }
+
+
+                      </Source>
+                    </Script>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+            <Script>
+              <Source>
+
+
+                String htmlcode = "&lt;center>&lt;font size=\"3\" color=\"#ff0000\">&lt;b> Owner update failed for the Entitlement  "+"\"" + EntitlementValue + "\"" +" &lt;/b>&lt;/font>&lt;/center>";
+
+                return htmlcode;
+
+
+              </Source>
+            </Script>
+          </Field>
+          <Field>
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source>
+                        if(ErrorMessage != null &amp;&amp; ErrorMessage==false){
+                        return false;
+                        }else{
+
+                        return true;
+
+                        }
+
+
+                      </Source>
+                    </Script>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+            <Script>
+              <Source>
+
+                String htmlcode = "&lt;center>&lt;font size=\"3\" color=\"#008B8B\">&lt;b>Owner  for the Entitlement  "+ "\"" + EntitlementValue + "\"" + "  has been succesfully updated. &lt;/b>&lt;/font>&lt;/center>";
+
+                return htmlcode;
+
+              </Source>
+            </Script>
+          </Field>
+        </Section>
+        <Button action="next" label="Update another Entitlement" parameter="buttonName" value="UpdateAnotherEntitlement"/>
+        <Button action="cancel" label="Cancel" parameter="buttonName" skipValidation="true" value="Cancel"/>
+      </Form>
+    </Approval>
+    <Transition to="Start">
+      <Script>
+        <Source>
+
+          System.out.println("the updateAnother Entitlement working here*****************"+buttonName);
+          if(buttonName != null &amp;&amp; buttonName.equalsIgnoreCase("UpdateAnotherEntitlement")){
+          wfcontext.getWorkflowCase().put("buttonName", "clear");
+          context.setProperty("buttonName","clear");
+          context.commitTransaction();
+          return true;
+
+          }
+        </Source>
+      </Script>
+    </Transition>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="398" posY="33"/>
+</Workflow>
