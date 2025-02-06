@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule created="" id="" language="beanshell" modified="" name="Run Prune Identity Report Customizer">
+  <Description>
+
+  </Description>
+  <Signature returnType="Map"/>
+  <Source>
+
+  import java.util.*;
+  import java.util.List;
+  import java.util.HashSet;
+  import java.util.Iterator;
+  import java.util.Date;
+  import sailpoint.object.Link;
+  import sailpoint.object.Bundle;
+  import sailpoint.object.Capability;
+  import sailpoint.object.ManagedAttribute;
+  import sailpoint.api.SailPointContext;
+  import sailpoint.object.Application;
+  import sailpoint.object.CertificationLink;
+  import sailpoint.object.WorkItem;
+  import sailpoint.object.Identity;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.object.Filter;
+  import sailpoint.object.QueryOptions;
+
+
+  public static Map returnMap = new HashMap();
+
+  List deletedIdentities = new ArrayList();
+  List protectedIdentities = new ArrayList();
+
+  Filter filter = Filter.notnull("name");
+
+  QueryOptions usersQop = new QueryOptions();
+
+  usersQop.addFilter(filter);
+
+  int countTotalObjects = context.countObjects(Identity.class, usersQop);
+
+  Filter filter2 = Filter.eq("correlated", Boolean.TRUE);
+
+  QueryOptions correlatedQop = new QueryOptions();
+
+  correlatedQop.addFilter(filter2);
+
+  int countCorrelatedObjects = context.countObjects(Identity.class, correlatedQop);
+
+  Iterator &lt;Identity> identities = context.search(Identity.class, usersQop);
+
+  while(identities != null &amp;&amp; identities.hasNext()) {
+
+    Identity identity = identities.next();
+
+    if(identity != null &amp;&amp; identity != void){
+
+      List &lt;Link> links = identity.getLinks();		
+
+      List &lt;CertificationLink> certifications = identity.getCertifications();
+
+      Date useBy = identity.getUseBy();
+
+      Filter filter = Filter.eq("manager.name", identity.getName());
+
+      QueryOptions managerQop = new QueryOptions();
+
+      managerQop.addFilter(filter);
+
+      List &lt;Identity> managerIdentities = context.getObjects(Identity.class, managerQop);
+
+      List &lt;Capability> capabilities = identity.getCapabilities();
+
+      boolean correlatedOverridden = identity.isCorrelatedOverridden();
+
+      Filter filter = Filter.eq("owner.name", identity.getName());
+
+      QueryOptions ownerQop = new QueryOptions();
+
+      ownerQop.addFilter(filter);
+
+      List &lt;Bundle> bundles = context.getObjects(Bundle.class, ownerQop);
+
+      List &lt;Application> applications = context.getObjects(Application.class, ownerQop);
+
+      List &lt;ManagedAttribute> managedAttributes = context.getObjects(ManagedAttribute.class, ownerQop);
+
+      List &lt;WorkItem> workItems = context.getObjects(WorkItem.class, ownerQop);
+
+      if(identity.getName().equalsIgnoreCase("spadmin")) {
+
+        protectedIdentities.add(identity.getName());
+
+      }else if(links != null &amp;&amp; !links.isEmpty()) {
+
+        protectedIdentities.add(identity.getName());
+
+      }else if(certifications != null &amp;&amp; !certifications.isEmpty()){
+
+        protectedIdentities.add(identity.getName());
+
+      }else if(managerIdentities != null &amp;&amp; !managerIdentities.isEmpty()){
+
+        protectedIdentities.add(identity.getName());
+
+      }else if(correlatedOverridden){
+
+        protectedIdentities.add(identity.getName());
+
+      }else if(useBy != null){
+
+        protectedIdentities.add(identity.getName());
+
+      }else if(capabilities != null &amp;&amp; !capabilities.isEmpty()){
+
+        protectedIdentities.add(identity.getName());
+
+      }else if(bundles != null &amp;&amp; !bundles.isEmpty()){
+
+        protectedIdentities.add(identity.getName());
+
+      }else if(applications != null &amp;&amp; !applications.isEmpty()){
+
+        protectedIdentities.add(identity.getName());
+
+      }else if(managedAttributes != null &amp;&amp; !managedAttributes.isEmpty()){
+
+        protectedIdentities.add(identity.getName());
+
+      }else if(workItems != null &amp;&amp; !workItems.isEmpty()){
+
+        protectedIdentities.add(identity.getName());
+
+      }else{
+
+        deletedIdentities.add(identity.getName());
+
+      }
+    }
+
+  }
+  returnMap.put("readyToDeleteIdentities", deletedIdentities.size());
+  returnMap.put("protectedIdentities", protectedIdentities.size());
+  returnMap.put("analyzedIdentities", countTotalObjects);
+  returnMap.put("correlatedIdentities", countCorrelatedObjects);
+
+  return returnMap;
+
+  </Source>
+</Rule>

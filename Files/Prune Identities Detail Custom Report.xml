@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition created="" executor="sailpoint.reporting.LiveReportExecutor" id="" modified="" name="Prune Identities Detail Custom Report" progressMode="Percentage" resultAction="Rename" subType="Administration Reports" template="true" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="report">
+        <value>
+          <LiveReport title="Identities Custom Report">
+            <DataSource objectType="Identity" type="Filter">
+              <QueryParameters>
+                <Parameter property="name">
+                  <QueryScript>
+                    <Source>
+
+                      import java.util.*;
+                      import java.util.List;
+                      import java.util.HashSet;
+                      import java.util.Iterator;
+                      import java.util.Date;
+                      import sailpoint.object.Link;
+                      import sailpoint.object.Bundle;
+                      import sailpoint.object.Capability;
+                      import sailpoint.object.ManagedAttribute;
+                      import sailpoint.api.SailPointContext;
+                      import sailpoint.object.Application;
+                      import sailpoint.object.CertificationLink;
+                      import sailpoint.object.WorkItem;
+                      import sailpoint.object.Identity;
+                      import sailpoint.tools.GeneralException;
+                      import sailpoint.object.Filter;
+                      import sailpoint.object.QueryOptions;
+
+
+                      List deletedIdentities = new ArrayList();
+
+                      Filter filter = Filter.eq("correlated", Boolean.TRUE);
+                      Filter filterNot = Filter.not(filter);
+
+                      QueryOptions usersQop = new QueryOptions();
+
+                      usersQop.addFilter(filterNot);
+
+                      Iterator identities = context.search(Identity.class, queryOptions, "name");
+
+                      while(identities != null &amp;&amp; identities.hasNext()){
+
+                      Object[] names = identities.next();
+
+                      String idName = names[0];
+
+                      System.out.println("******** IdentityName is : "+idName);
+
+                      Identity identity = context.getObjectByName(Identity.class, idName);
+
+                      if(identity != null &amp;&amp; identity != void){
+
+                      List &lt;Link> links = identity.getLinks();		
+
+                      List &lt;CertificationLink> certifications = identity.getCertifications();
+
+                      Date useBy = identity.getUseBy();
+
+                      Filter filter = Filter.eq("manager.name", identity.getName());
+
+                      QueryOptions managerQop = new QueryOptions();
+
+                      managerQop.addFilter(filter);
+
+                      List &lt;Identity> managerIdentities = context.getObjects(Identity.class, managerQop);
+
+                      List &lt;Capability> capabilities = identity.getCapabilities();
+
+                      boolean correlatedOverridden = identity.isCorrelatedOverridden();
+
+                      Filter filter = Filter.eq("owner.name", identity.getName());
+
+                      QueryOptions ownerQop = new QueryOptions();
+
+                      ownerQop.addFilter(filter);
+
+                      List &lt;Bundle> bundles = context.getObjects(Bundle.class, ownerQop);
+
+                      List &lt;Application> applications = context.getObjects(Application.class, ownerQop);
+
+                      List &lt;ManagedAttribute> managedAttributes = context.getObjects(ManagedAttribute.class, ownerQop);
+
+                      List &lt;WorkItem> workItems = context.getObjects(WorkItem.class, ownerQop);
+
+                      if(identity.getName().equalsIgnoreCase("spadmin")) {
+
+                      }else if(links != null &amp;&amp; !links.isEmpty()) {
+
+                      }else if(certifications != null &amp;&amp; !certifications.isEmpty()){
+
+                      }else if(managerIdentities != null &amp;&amp; !managerIdentities.isEmpty()){
+
+                      }else if(correlatedOverridden){
+
+                      }else if(useBy != null){
+
+                      }else if(capabilities != null &amp;&amp; !capabilities.isEmpty()){
+
+                      }else if(bundles != null &amp;&amp; !bundles.isEmpty()){
+
+                      }else if(applications != null &amp;&amp; !applications.isEmpty()){
+
+                      }else if(managedAttributes != null &amp;&amp; !managedAttributes.isEmpty()){
+
+                      }else if(workItems != null &amp;&amp; !workItems.isEmpty()){
+
+                      }else{
+
+                      deletedIdentities.add(identity.getName());
+
+                      }
+                      }
+                      }
+
+                      System.out.println("**** deletedIdentities list: "+ deletedIdentities);
+
+                      Filter filterDel = Filter.in("name", deletedIdentities);
+
+                      queryOptions.addFilter(filterDel);
+
+                      return queryOptions
+
+                    </Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <Columns>
+              <ReportColumnConfig field="name" header="identity_name" property="name" scriptArguments="name" sortable="true" width="110"/>
+              <ReportColumnConfig field="firstname" header="first_name" property="firstname" scriptArguments="name" sortable="true" width="110"/>
+              <ReportColumnConfig field="lastname" header="last_name" property="lastname" scriptArguments="name" sortable="true" width="110"/>
+            </Columns>
+          </LiveReport>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <RequiredRights>
+    <Reference class="sailpoint.object.SPRight" id="" name="FullAccessIdentityCubeSummaryReport"/>
+  </RequiredRights>
+</TaskDefinition>
